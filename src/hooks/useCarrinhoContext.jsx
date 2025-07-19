@@ -1,19 +1,26 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { CarrinhoContext } from "@/context/CarrinhoContext";
 
 export const useCarrinhoContext = () => {
-  const { carrinho, setCarrinho } = useContext(CarrinhoContext);
+  const {
+    carrinho,
+    setCarrinho,
+    quantidade,
+    setQuantidade,
+    valorTotal,
+    setValorTotal
+  } = useContext(CarrinhoContext);
 
-    function mudarQuantidade (id, quantidade) {
-        return carrinho.map((itemDoCarrinho) => {
-            if(itemDoCarrinho.id === id) itemDoCarrinho.quantidade += quantidade;
-            return itemDoCarrinho;
-        });
-    }
+  function mudarQuantidade(id, quantidade) {
+    return carrinho.map((itemDoCarrinho) => {
+      if (itemDoCarrinho.id === id) itemDoCarrinho.quantidade += quantidade;
+      return itemDoCarrinho;
+    });
+  }
 
   function adicionarProduto(novoProduto) {
     const temOProduto = carrinho.some(
-        (itemDoCarrinho) => itemDoCarrinho.id === novoProduto.id
+      (itemDoCarrinho) => itemDoCarrinho.id === novoProduto.id
     );
     if (!temOProduto) {
       novoProduto.quantidade = 1;
@@ -34,17 +41,17 @@ export const useCarrinhoContext = () => {
     // verify if the quantity is equal to 1. This mean that is the last one
     //product of type in chart
     const ehOUltimo = produto.quantidade === 1;
-    
+
     if (ehOUltimo) {
       return setCarrinho((carrinhoAnterior) =>
         carrinhoAnterior.filter((itemDoCarrinho) => itemDoCarrinho.id !== id)
-      );   
+      );
     }
 
     const carrinhoAtualizado = mudarQuantidade(id, -1)
 
     // if not the last one, just decrease the quantity
-    setCarrinho([...carrinhoAtualizado]); 
+    setCarrinho([...carrinhoAtualizado]);
   }
 
   function removerProdutoCarrinho(id) {
@@ -52,12 +59,29 @@ export const useCarrinhoContext = () => {
     setCarrinho(produto)
   }
 
+  useEffect(() => {
+    const { totalTemp, quantidadeTemp } = carrinho.reduce(
+      (acumulador, produto) => ({
+        quantidadeTemp: acumulador.quantidadeTemp + produto.quantidade,
+        totalTemp: acumulador.totalTemp + produto.preco * produto.quantidade,
+      }),
+      {
+        quantidadeTemp: 0,
+        totalTemp: 0,
+      }
+    );
+    setQuantidade(quantidadeTemp);
+    setValorTotal(totalTemp);
+  }, [carrinho]);
+
   return {
-    carrinho, 
+    carrinho,
     setCarrinho,
     adicionarProduto,
     removerProduto,
-    removerProdutoCarrinho
+    removerProdutoCarrinho,
+    valorTotal,
+    quantidade
   }
 }
 
